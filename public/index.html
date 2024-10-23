@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Metadata Tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    
+    .toolbar {
+      display: flex;
+      justify-content: space-around;
+      background-color: #333;
+      padding: 10px 0;
+    }
+    
+    .toolbar button {
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    
+    .toolbar button.active {
+      background-color: #555;
+    }
+    
+    .content {
+      padding: 20px;
+      display: none;
+    }
+    
+    .content.active {
+      display: block;
+    }
+
+    form {
+      margin-top: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input[type="file"],
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button[type="submit"] {
+      padding: 10px 15px;
+      background-color: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    h2 {
+      margin-top: 30px;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    ul li {
+      padding: 5px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 style="text-align: center;">PDF Metadata Tool</h1>
+
+  <div class="toolbar">
+    <button class="tablink active" onclick="openTab(event, 'edit')">Edit</button>
+    <button class="tablink" onclick="openTab(event, 'view')">View</button>
+  </div>
+
+  <!-- Tab Edit Metadata -->
+  <div id="edit" class="content active">
+    <form action="/edit-metadata" method="post" enctype="multipart/form-data">
+      <label for="pdf">Select a PDF file</label>
+      <input type="file" name="pdf" id="pdf" accept=".pdf" required>
+  
+      <label for="title">Title:</label>
+      <input type="text" name="title" id="title">
+  
+      <label for="author">Author:</label>
+      <input type="text" name="author" id="author" value="">
+  
+      <label for="subject">Subject:</label>
+      <input type="text" name="subject" id="subject">
+  
+      <label for="keywords">Keywords:</label>
+      <input type="text" name="keywords" id="keywords">
+
+      <label for="application">Application:</label>
+      <input type="text" name="application" id="application" value="">
+  
+      <label for="producer">Producer:</label>
+      <input type="text" name="producer" id="producer" value="">
+  
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <!-- Tab View Metadata -->
+  <div id="view" class="content">
+    <form id="viewForm" enctype="multipart/form-data">
+      <label for="pdf">Select a PDF file:</label>
+      <input type="file" name="pdf" id="viewPdf" accept=".pdf" required>
+      
+      <button type="submit">View</button>
+    </form>
+
+    <h3>Metadata PDF:</h3>
+    <ul id="metadataList">
+      <li>Title: -</li>
+      <li>Author: -</li>
+      <li>Subject: -</li>
+      <li>Keywords: -</li>
+      <li>Application: -</li>
+      <li>Producer: -</li>
+    </ul>
+  </div>
+
+  <script>
+
+    function openTab(event, tabName) {
+      const tabs = document.getElementsByClassName('content');
+      for (let i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove('active');
+      }
+
+      const tablinks = document.getElementsByClassName('tablink');
+      for (let i = 0; i < tablinks.length; i++) {
+        tablinks[i].classList.remove('active');
+      }
+
+      document.getElementById(tabName).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+
+
+    const form = document.getElementById('viewForm');
+    form.onsubmit = async function (e) {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      const response = await fetch('/view-metadata', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const metadata = await response.json();
+
+      const list = document.getElementById('metadataList');
+      list.innerHTML = `
+        <li>Title: ${metadata.title}</li>
+        <li>Author: ${metadata.author}</li>
+        <li>Subject: ${metadata.subject}</li>
+        <li>Keywords: ${metadata.keywords}</li>
+        <li>Application: ${metadata.application}</li>
+        <li>Producer: ${metadata.producer}</li>
+      `;
+    };
+  </script>
+
+</body>
+</html>
